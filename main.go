@@ -2,10 +2,10 @@ package main
 
 import (
 	_ "dcard-golang-project/docs"
+	"dcard-golang-project/middlewares"
+	"dcard-golang-project/routes"
 
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title           Swagger Example API
@@ -30,9 +30,13 @@ import (
 
 func main() {
 	r := gin.Default()
+
 	r.LoadHTMLGlob("templates/*")
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.Use(middlewares.ErrorHandler())
+
+	routes.ApiRoutersInit(r)
+	routes.SwaggerRoutersInit(r)
 
 	r.Run()
 }
