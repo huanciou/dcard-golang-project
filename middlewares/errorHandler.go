@@ -10,6 +10,14 @@ func (e *ValidationError) Error() string {
 	return e.Message
 }
 
+type ServerInternalError struct {
+	Message string
+}
+
+func (e *ServerInternalError) Error() string {
+	return e.Message
+}
+
 func ErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
@@ -18,8 +26,11 @@ func ErrorHandler() gin.HandlerFunc {
 				case *ValidationError:
 					c.JSON(400, gin.H{"error": e.Error()})
 					c.Abort()
+				case *ServerInternalError:
+					c.JSON(500, gin.H{"error": e.Error()})
+					c.Abort()
 				case error:
-					c.JSON(400, gin.H{"error": e.Error()})
+					c.JSON(500, gin.H{"error": e.Error()})
 					c.Abort()
 				default:
 					c.JSON(500, gin.H{"error": "Unknown Error"})

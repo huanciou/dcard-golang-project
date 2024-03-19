@@ -38,5 +38,5 @@ func main() {
 	routes.ApiRoutersInit(r)
 	routes.SwaggerRoutersInit(r)
 
-	r.Run()
+	r.Run(":8080")
 }
