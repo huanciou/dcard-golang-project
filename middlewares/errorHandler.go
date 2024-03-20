@@ -1,6 +1,9 @@
 package middlewares
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+)
 
 type ValidationError struct {
 	Message string
@@ -24,13 +27,22 @@ func ErrorHandler() gin.HandlerFunc {
 			if err := recover(); err != nil {
 				switch e := err.(type) {
 				case *ValidationError:
-					c.JSON(400, gin.H{"error": e.Error()})
+					Logger().WithFields(logrus.Fields{
+						"Message": e.Error(),
+					}).Info("Validation Error")
+					c.JSON(400, gin.H{"error": "Validation Error"})
 					c.Abort()
 				case *ServerInternalError:
-					c.JSON(500, gin.H{"error": e.Error()})
+					Logger().WithFields(logrus.Fields{
+						"Message": e.Error(),
+					}).Error("Server Internal Error")
+					c.JSON(500, gin.H{"error": "Server Internal Error"})
 					c.Abort()
 				case error:
-					c.JSON(500, gin.H{"error": e.Error()})
+					Logger().WithFields(logrus.Fields{
+						"Message": e.Error(),
+					}).Error("Error")
+					c.JSON(500, gin.H{"error": "Error"})
 					c.Abort()
 				default:
 					c.JSON(500, gin.H{"error": "Unknown Error"})

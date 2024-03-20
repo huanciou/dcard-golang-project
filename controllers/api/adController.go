@@ -10,21 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Ad struct{}
+// type Ad struct{}
 
 /* manually create Ad */
 
-func (Ad) Admin(c *gin.Context) { // POST
+func Admin(c *gin.Context) { // POST
 	post := models.Admin{}
 
 	if err := c.ShouldBindJSON(&post); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
+	} else {
+		c.JSON(200, post)
 	}
 }
 
 /* broadcasting */
 
-func (Ad) Broadcast(c *gin.Context) { // GET
+func Broadcast(c *gin.Context) { // GET
 
 	var offsetStr string = c.DefaultQuery("offset", "5")
 	var ageStr string = c.DefaultQuery("age", "-1")
@@ -47,7 +49,7 @@ func (Ad) Broadcast(c *gin.Context) { // GET
 	}
 
 	if err := utils.Validate.Struct(params); err != nil {
-		panic(&(middlewares.ValidationError{Message: "Validation Error"}))
+		panic(&(middlewares.ValidationError{Message: err.Error()}))
 	} else {
 		c.JSON(200, params)
 	}
@@ -56,7 +58,7 @@ func (Ad) Broadcast(c *gin.Context) { // GET
 
 /* auto generate mock Ads */
 
-func (Ad) MockData(c *gin.Context) {
+func MockData(c *gin.Context) {
 	var mockDataSet []models.Admin
 
 	for i := 0; i < 1000; i++ {
@@ -66,7 +68,7 @@ func (Ad) MockData(c *gin.Context) {
 			StartAt: "0301",
 			EndAt:   "0302",
 			Conditions: models.Conditions{
-				Age:      &age,
+				Age:      age,
 				Gender:   []string{"M", "F"},
 				Country:  []string{"TW", "JP"},
 				Platform: []string{"IOS", "Android", "Web"},

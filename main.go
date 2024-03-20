@@ -4,8 +4,11 @@ import (
 	_ "dcard-golang-project/docs"
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/routes"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 // @title           Swagger Example API
@@ -28,15 +31,27 @@ import (
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func main() {
 	r := gin.Default()
 
+	/* statics */
 	r.LoadHTMLGlob("templates/*")
 
+	/* middlewares */
+
+	r.Use(middlewares.LoggerToFile())
 	r.Use(middlewares.ErrorHandler())
 
+	/* rotues */
 	routes.ApiRoutersInit(r)
 	routes.SwaggerRoutersInit(r)
 
-	r.Run(":8080")
+	PORT := os.Getenv("SERVER_PORT")
+	r.Run(PORT)
 }

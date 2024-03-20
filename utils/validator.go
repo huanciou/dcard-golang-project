@@ -19,7 +19,7 @@ type Params struct {
 }
 
 func CountryValidate(fl validator.FieldLevel) bool {
-	countries := []string{"US", "UK", "JP", "TW", "CN", "UC"}
+	countries := []string{"US", "UK", "JP", "TW", "CN"}
 
 	value := fl.Field().String()
 

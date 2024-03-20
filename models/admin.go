@@ -1,14 +1,14 @@
 package models
 
 type Admin struct {
-	Title      string     `json:"title"`
-	StartAt    string     `json:"startAt"`
-	EndAt      string     `json:"endAt"`
-	Conditions Conditions `json:"conditions"`
+	Title      string `json:"title"`
+	StartAt    string `json:"startAt"`
+	EndAt      string `json:"endAt"`
+	Conditions `json:"conditions"`
 }
 
 type Conditions struct {
-	Age      *int     `json:"age"`
+	Age      int      `json:"age"`
 	Gender   []string `json:"gender"`
 	Country  []string `json:"country"`
 	Platform []string `json:"platform"`
