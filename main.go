@@ -4,6 +4,7 @@ import (
 	_ "dcard-golang-project/docs"
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/routes"
+	"fmt"
 	"log"
 	"os"
 
@@ -34,6 +35,8 @@ import (
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
+	} else {
+		fmt.Printf("man init")
 	}
 }
 

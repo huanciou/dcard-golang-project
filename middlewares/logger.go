@@ -57,8 +57,10 @@ func LoggerToFile() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		startTime := time.Now()
+		fmt.Println("logger here")
 		c.Next()
 
+		fmt.Println("logger continue")
 		endTime := time.Now()
 
 		latencyTime := endTime.Sub(startTime)
