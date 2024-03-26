@@ -1,26 +1,26 @@
 package models
 
-type Admin struct {
-	Title      string `json:"title"`
-	StartAt    string `json:"startAt"`
-	EndAt      string `json:"endAt"`
-	Conditions `json:"conditions"`
+import (
+	"dcard-golang-project/schemas"
+)
+
+type AdminSummary struct {
+	Id    int    `json:"id"`
+	Title string `json:"title"`
+	EndAt string `json:"end_at"`
 }
 
-type Conditions struct {
-	Age      int      `json:"age"`
-	Gender   []string `json:"gender"`
-	Country  []string `json:"country"`
-	Platform []string `json:"platform"`
-}
+func FindAdminWithDetails(country, gender, platform string) ([]schemas.Admin, error) {
+	var admin []schemas.Admin
+	// var result []AdminSummary
 
-func (Admin) TableName() string {
-	return "admin"
-}
+	err := DB.Model(&schemas.Admin{}).
+		Joins("JOIN countries ON countries.admin_id = admin.id").
+		Joins("JOIN genders ON genders.admin_id = admin.id").
+		Joins("JOIN platforms ON platforms.admin_id = admin.id").
+		Where("countries.country = ? AND genders.gender = ? AND platforms.platform = ?", country, gender, platform).
+		Preload("Country").Preload("Gender").Preload("Platform").
+		Find(&admin).Error
 
-func PostAd(p Admin) {
-}
-
-func AutoPostMockAd(p []Admin) ([]Admin, error) {
-	return []Admin{}, nil
+	return admin, err
 }

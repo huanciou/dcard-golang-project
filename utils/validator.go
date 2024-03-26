@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/go-playground/validator/v10"
+	"github.com/pariz/gountries"
+)
 
 var Validate *validator.Validate
 
@@ -18,15 +21,14 @@ type Params struct {
 	Country  string `validate:"CountryValidate,required" json:"country"`
 }
 
+/* support ISO 3166-1 Alpha-2/Alpha-3 code */
 func CountryValidate(fl validator.FieldLevel) bool {
-	countries := []string{"US", "UK", "JP", "TW", "CN"}
-
+	query := gountries.New()
 	value := fl.Field().String()
 
-	for _, country := range countries {
-		if country == value {
-			return true
-		}
+	if _, err := query.FindCountryByAlpha(value); err != nil {
+		return false
 	}
-	return false
+
+	return true
 }

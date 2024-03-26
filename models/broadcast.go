@@ -1,8 +1,10 @@
 package models
 
 type Broadcast struct {
-	Title string
-	EndAt string
+	Offset int
+	Limit  int
+	Title  string
+	EndAt  string
 }
 
 func (Broadcast) TableName() string {

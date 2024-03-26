@@ -1,8 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -32,7 +30,6 @@ func ErrorHandler() gin.HandlerFunc {
 					Logger().WithFields(logrus.Fields{
 						"Message": e.Error(),
 					}).Info("Validation Error")
-					fmt.Println("ve here")
 					c.JSON(400, gin.H{"error": "Validation Error"})
 					c.Abort()
 				case *ServerInternalError:

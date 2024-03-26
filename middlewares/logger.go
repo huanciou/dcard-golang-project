@@ -44,7 +44,7 @@ func Logger() *logrus.Logger {
 	logger := logrus.New()
 	logger.Out = src
 
-	logger.SetLevel(logrus.InfoLevel)
+	logger.SetLevel(logrus.WarnLevel)
 
 	logger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
@@ -54,13 +54,12 @@ func Logger() *logrus.Logger {
 
 func LoggerToFile() gin.HandlerFunc {
 	logger := Logger()
+
 	return func(c *gin.Context) {
 
 		startTime := time.Now()
-		fmt.Println("logger here")
 		c.Next()
 
-		fmt.Println("logger continue")
 		endTime := time.Now()
 
 		latencyTime := endTime.Sub(startTime)

@@ -3,8 +3,8 @@ package main
 import (
 	_ "dcard-golang-project/docs"
 	"dcard-golang-project/middlewares"
+	"dcard-golang-project/models"
 	"dcard-golang-project/routes"
-	"fmt"
 	"log"
 	"os"
 
@@ -35,9 +35,10 @@ import (
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
-	} else {
-		fmt.Printf("man init")
 	}
+	/* db initiation */
+	models.DBInit()
+	models.RedisInit()
 }
 
 func main() {
@@ -47,8 +48,7 @@ func main() {
 	r.LoadHTMLGlob("templates/*")
 
 	/* middlewares */
-
-	r.Use(middlewares.LoggerToFile())
+	// r.Use(middlewares.LoggerToFile())
 	r.Use(middlewares.ErrorHandler())
 
 	/* rotues */
