@@ -7,9 +7,11 @@ import (
 )
 
 func ApiRoutersInit(r *gin.Engine) {
-	apiRouters := r.Group("/v1/api")
+	apiRouters := r.Group("/api/v1")
 	{
-		apiRouters.GET("/admin", api.AD{}.Admin)
-		apiRouters.GET("/broadcast", api.AD{}.Broadcast)
+		apiRouters.GET("/ad", api.Broadcast)
+		apiRouters.POST("/ad", api.Admin)
+		apiRouters.GET("/mock", api.MockData)
+		apiRouters.GET("/test", api.Test)
 	}
 }
