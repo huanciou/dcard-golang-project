@@ -74,16 +74,14 @@ func Broadcast(c *gin.Context) { // GET
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
 	}
 
-	/* query */
+	/* db query */
 
-	result, err := models.FindAdminWithDetails(params.Country, params.Gender, params.Platform)
-	if err != nil {
-		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
-	}
+	// result, err := models.FindAdminWithDetails(params.Country, params.Gender, params.Platform)
+	// if err != nil {
+	// 	panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	// }
 
-	utils.Scheduler(result)
-
-	c.JSON(200, result)
+	/* redis query */
 
 }
 
@@ -111,7 +109,7 @@ func MockData(c *gin.Context) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	for i := 0; i < 2000; i++ {
+	for i := 0; i < 3000; i++ {
 		var countries []schemas.Country
 		var genders []schemas.Gender
 		var platforms []schemas.Platform
@@ -168,7 +166,11 @@ func MockData(c *gin.Context) {
 }
 
 func Test(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"result": "OK",
-	})
+	data := utils.A()
+	c.JSON(200, data)
 }
+
+// func Test2(c *gin.Context) {
+// 	data := utils.B()
+// 	c.JSON(200, data)
+// }

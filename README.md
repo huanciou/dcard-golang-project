@@ -34,12 +34,3 @@ panic 時，除了回傳給用戶對應的錯誤 status code 以外，並將`實
 
 預先定義 GET, POST method 傳入的 Struct format。當用戶傳入非定義的格式時，將回傳
 Validation Error 給予用戶。
-
-## Query N+1 Problem?
-
-Q: 確認 Orm 對 DB 操作的 query 語句 是 join 多張 Table 來達到 query
-而非對 DB 多次 io 來達到 query 結果
-
-db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-Logger: logger.Default.LogMode(logger.Info), // 设置日志级别为 Info，以便打印 SQL 语句
-})

@@ -5,8 +5,12 @@ import (
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/models"
 	"dcard-golang-project/routes"
+	"dcard-golang-project/utils"
 	"log"
 	"os"
+	"runtime"
+
+	"github.com/gin-contrib/pprof"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -39,6 +43,10 @@ func init() {
 	/* db initiation */
 	models.DBInit()
 	models.RedisInit()
+	utils.LoadLuaScript()
+
+	maxCPUs := runtime.NumCPU()
+	runtime.GOMAXPROCS(maxCPUs)
 }
 
 func main() {
@@ -54,6 +62,8 @@ func main() {
 	/* rotues */
 	routes.ApiRoutersInit(r)
 	routes.SwaggerRoutersInit(r)
+
+	pprof.Register(r)
 
 	PORT := os.Getenv("SERVER_PORT")
 	r.Run(PORT)
