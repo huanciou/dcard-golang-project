@@ -4,7 +4,6 @@ import (
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/schemas"
 	"fmt"
-	"os"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -14,11 +13,13 @@ var DB *gorm.DB
 var err error
 
 func DBInit() {
-	USER := os.Getenv("DB_USER")
-	HOST := os.Getenv("DB_HOST")
-	NAME := os.Getenv("DB_NAME")
+	// USER := os.Getenv("DB_USER")
+	// HOST := os.Getenv("DB_HOST")
+	// NAME := os.Getenv("DB_NAME")
 
-	dsn := fmt.Sprintf("%s:@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", USER, HOST, NAME)
+	// dsn := fmt.Sprintf("%s:@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", HOST, USER, NAME)
+
+	dsn := "user:@tcp(db:3306)/gin?charset=utf8mb4&parseTime=True&loc=Local"
 
 	if DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// Logger: logger.Default.LogMode(logger.Info),

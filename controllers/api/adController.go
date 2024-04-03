@@ -50,11 +50,12 @@ func Admin(c *gin.Context) { // POST
 
 func Broadcast(c *gin.Context) { // GET
 
-	var offsetStr string = c.DefaultQuery("offset", "5")
-	var ageStr string = c.DefaultQuery("age", "-1")
-	var gender string = c.DefaultQuery("gender", "-1")
-	var country string = c.DefaultQuery("country", "-1")
-	var platform string = c.DefaultQuery("platform", "-1")
+	/* receive query params */
+	offsetStr := c.DefaultQuery("offset", "5")
+	ageStr := c.Query("age")
+	gender := c.Query("gender")
+	country := c.Query("country")
+	platform := c.Query("platform")
 
 	/* convert string to int */
 	offset, _ := strconv.Atoi(offsetStr)
@@ -69,20 +70,15 @@ func Broadcast(c *gin.Context) { // GET
 		Country:  country,
 		Platform: platform,
 	}
-
 	if err := utils.Validate.Struct(params); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
 	}
 
-	/* db query */
-
-	// result, err := models.FindAdminWithDetails(params.Country, params.Gender, params.Platform)
-	// if err != nil {
-	// 	panic(&(middlewares.ServerInternalError{Message: err.Error()}))
-	// }
-
 	/* redis query */
+	result := utils.A(params)
 
+	/* response */
+	c.JSON(200, result)
 }
 
 /* auto generate mock Ads */
@@ -91,14 +87,14 @@ func MockData(c *gin.Context) {
 	var mockDataSet []schemas.Admin
 
 	var mockCountries = []string{
-		"TW",
-		"JP",
-		"CN",
+		"tw",
+		"jp",
+		"cn",
 	}
 
 	var mockGenders = []string{
-		"M",
-		"F",
+		"m",
+		"f",
 	}
 
 	var mockPlatforms = []string{
@@ -166,11 +162,50 @@ func MockData(c *gin.Context) {
 }
 
 func Test(c *gin.Context) {
-	data := utils.A()
+	params := utils.Params{
+		Offset: 1,
+		Limit:  3,
+	}
+	data := utils.A(params)
 	c.JSON(200, data)
 }
 
-// func Test2(c *gin.Context) {
-// 	data := utils.B()
-// 	c.JSON(200, data)
-// }
+func Test2(c *gin.Context) {
+	/* receive query params */
+	offsetStr := c.DefaultQuery("offset", "5")
+	ageStr := c.DefaultQuery("age", "-1")
+	gender := c.DefaultQuery("gender", "nil")
+	country := c.DefaultQuery("country", "nil")
+	platform := c.DefaultQuery("platform", "nil")
+
+	/* convert string to int */
+	offset, _ := strconv.Atoi(offsetStr)
+	age, _ := strconv.Atoi(ageStr)
+
+	/* validation */
+	params := utils.Params{
+		Offset:   offset,
+		Limit:    3,
+		Age:      age,
+		Gender:   gender,
+		Country:  country,
+		Platform: platform,
+	}
+
+	if err := utils.Validate.Struct(params); err != nil {
+		panic(&(middlewares.ValidationError{Message: err.Error()}))
+	}
+	result := utils.A(params)
+
+	c.JSON(200, result)
+}
+
+func SetBitmap(c *gin.Context) {
+
+	result, err := models.FindAdminWithDetails()
+	if err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+	utils.Scheduler(result)
+	c.JSON(200, result)
+}

@@ -9,20 +9,21 @@ var Validate *validator.Validate
 
 func init() {
 	Validate = validator.New()
-	Validate.RegisterValidation("CountryValidate", CountryValidate)
+	Validate.RegisterValidation("CountryValidator", CountryValidator)
+	Validate.RegisterValidation("AgeValidator", AgeValidator)
 }
 
 type Params struct {
-	Offset   int    `validate:"min=1,max=100,required" json:"offset"`
+	Offset   int    `validate:"min=1,max=100" json:"offset"`
 	Limit    int    `validate:"required" json:"limit"`
-	Age      int    `validate:"min=1,max=100" json:"age"`
-	Gender   string `validate:"oneof=M F,required" json:"gender"`
-	Platform string `validate:"oneof=IOS Android Web,required" json:"platform"`
-	Country  string `validate:"CountryValidate,required" json:"country"`
+	Age      int    `validate:"AgeValidator" json:"age"`
+	Gender   string `validate:"oneof=m f nil" json:"gender"`
+	Platform string `validate:"oneof=ios android web nil" json:"platform"`
+	Country  string `validate:"CountryValidator" json:"country"`
 }
 
 /* support ISO 3166-1 Alpha-2/Alpha-3 code */
-func CountryValidate(fl validator.FieldLevel) bool {
+func CountryValidator(fl validator.FieldLevel) bool {
 	query := gountries.New()
 	value := fl.Field().String()
 
@@ -31,4 +32,9 @@ func CountryValidate(fl validator.FieldLevel) bool {
 	}
 
 	return true
+}
+
+func AgeValidator(fl validator.FieldLevel) bool {
+	age := fl.Field().Int()
+	return age == -1 || (age >= 1 && age <= 100)
 }

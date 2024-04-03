@@ -10,27 +10,23 @@
        IO Redis 進而造成多餘的網路開銷, 使用 Lua 將整個事務視為一體可減少 Redis 負載
 ]]
 
-local key = KEYS[1]
-local indexes = {}
-local m = tonumber(ARGV[1])
-local n = tonumber(ARGV[2])
+local m = tonumber(ARGV[3])
+local n = tonumber(ARGV[4])
 
-local startPos = 0
-
-while true do
-    local pos = redis.call('BITPOS', key, 1, startPos, -1, "bit")
-    if pos == -1 then
-        break
-    end
-    table.insert(indexes, tostring(pos))
-    startPos = pos + 1
+local queryConditions = {}
+for condition in string.gmatch(ARGV[1], "[^,]+") do
+    table.insert(queryConditions, condition)
 end
 
-local slicedIndexes = {}
-for i =  1+3*(m-1), math.min(#indexes, (1+3*(m-1))+2) do
-    table.insert(slicedIndexes, indexes[i])
+local queryAge = {}
+for age in string.gmatch(ARGV[2], "[^,]+") do
+    table.insert(queryAge, age)
 end
 
-local values = redis.call('MGET', unpack(slicedIndexes))
+redis.call("BITOP", "OR", "queryAge", unpack(queryAge))
+redis.call("BITOP", "AND", "queryConditions", unpack(queryConditions))
+redis.call("BITOP", "AND", "result", "queryAge", "queryConditions")
 
-return values
+local bitMapData = redis.call('GET', "result")
+
+return bitMapData

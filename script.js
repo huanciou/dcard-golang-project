@@ -11,7 +11,9 @@ export const options = {
 
 export default function () {
   for (let i = 0; i < 10; i++) {
-    http.get('http://localhost:8080/api/v1/test');
+    http.get(
+      'http://localhost:8080/api/v1/ad?offset=1&age=30&gender=f&country=tw&platform=ios',
+    );
   }
 
   sleep(1);

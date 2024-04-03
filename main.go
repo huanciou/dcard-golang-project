@@ -6,9 +6,9 @@ import (
 	"dcard-golang-project/models"
 	"dcard-golang-project/routes"
 	"dcard-golang-project/utils"
+	"dcard-golang-project/workers"
 	"log"
 	"os"
-	"runtime"
 
 	"github.com/gin-contrib/pprof"
 
@@ -43,10 +43,12 @@ func init() {
 	/* db initiation */
 	models.DBInit()
 	models.RedisInit()
+
+	/* Load Lua Script*/
 	utils.LoadLuaScript()
 
-	maxCPUs := runtime.NumCPU()
-	runtime.GOMAXPROCS(maxCPUs)
+	// 分配一個 goroutine 進行 cron job
+	go workers.CronJob()
 }
 
 func main() {

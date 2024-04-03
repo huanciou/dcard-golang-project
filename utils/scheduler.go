@@ -7,35 +7,52 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 /* 從 db 拿出 依照 Order by data (ASC) 後的所有廣告，建立 Bitmap */
 func Scheduler(ads []schemas.Admin) {
-
 	for index, ad := range ads {
 		idStr := strconv.Itoa(index + 1) // int to str
 		adJSON, _ := json.Marshal(ad)
 
 		models.Client.Set(models.Ctx, idStr, adJSON, 0) // id->ad 儲存廣告
 
+		switch {
+		case ad.AgeStart == 1 && ad.AgeEnd == 20:
+			models.Client.SetBit(models.Ctx, "1to20", int64(index+1), 1)
+		case ad.AgeStart == 1 && ad.AgeEnd == 24:
+			models.Client.SetBit(models.Ctx, "1to24", int64(index+1), 1)
+		case ad.AgeStart == 1 && ad.AgeEnd == 100:
+			models.Client.SetBit(models.Ctx, "1to100", int64(index+1), 1)
+		case ad.AgeStart == 20 && ad.AgeEnd == 24:
+			models.Client.SetBit(models.Ctx, "20to24", int64(index+1), 1)
+		case ad.AgeStart == 20 && ad.AgeEnd == 100:
+			models.Client.SetBit(models.Ctx, "20to100", int64(index+1), 1)
+		case ad.AgeStart == 24 && ad.AgeEnd == 100:
+			models.Client.SetBit(models.Ctx, "24to100", int64(index+1), 1)
+		}
+
 		for _, countries := range ad.Country {
 			switch countries.Country {
-			case "TW":
+			case "tw":
 				models.Client.SetBit(models.Ctx, countries.Country, int64(index+1), 1)
-			case "CN":
+			case "cn":
 				models.Client.SetBit(models.Ctx, countries.Country, int64(index+1), 1)
-			case "JP":
+			case "jp":
 				models.Client.SetBit(models.Ctx, countries.Country, int64(index+1), 1)
 			}
 		}
+
 		for _, genders := range ad.Gender {
 			switch genders.Gender {
-			case "M":
+			case "m":
 				models.Client.SetBit(models.Ctx, genders.Gender, int64(index+1), 1)
-			case "F":
+			case "f":
 				models.Client.SetBit(models.Ctx, genders.Gender, int64(index+1), 1)
 			}
 		}
+
 		for _, platforms := range ad.Platform {
 			switch platforms.Platform {
 			case "ios":
@@ -49,25 +66,55 @@ func Scheduler(ads []schemas.Admin) {
 	}
 }
 
-func A() []schemas.Admin {
+func A(params Params) []schemas.Admin {
 	ctx := context.Background()
-	key := "result"
+	queryConditions := []string{}
+	queryAge := []string{}
 
-	// cmd := redis.NewScript(Script)
-	// result, err := cmd.Run(ctx, models.Client, []string{key}, 1, 3).Result()
+	/* setup query conditions */
+	AgeRangeChecker(&queryAge, params.Age)
+	OptionsChecker(&queryConditions, params)
 
-	result, err := models.Client.EvalSha(ctx, LuaHash, []string{key}, 1, 3).Result()
+	/* setup result bitmap with Lua script*/
+	conditionsStr := strings.Join(queryConditions, ",")
+	ageStr := strings.Join(queryAge, ",")
+
+	result, err := models.Client.EvalSha(ctx, LuaHash1, nil, conditionsStr, ageStr, params.Offset, params.Limit).Result()
+
 	if err != nil {
 		fmt.Println("Error:", err)
 		return nil
 	}
 
-	values, ok := result.([]interface{})
+	bitMapData, ok := result.(string)
+	if !ok {
+		fmt.Println("Error: Result is not a string")
+	}
+
+	indexes := []string{}
+	counter := 1
+	flag := 1 + params.Limit*(params.Offset-1)
+
+	for i := 0; len(indexes) < params.Limit; i++ {
+		for j := 7; j >= 0 && len(indexes) < params.Limit; j-- { // from LSB
+			if bitMapData[i]&(1<<j) != 0 && counter >= flag {
+				indexes = append(indexes, strconv.Itoa((i*8)+(7-j)+1))
+			} else if bitMapData[i]&(1<<j) != 0 {
+				counter++
+			}
+		}
+	}
+
+	indexesStr := strings.Join(indexes, ",")
+	result2, _ := models.Client.EvalSha(ctx, LuaHash2, nil, indexesStr, params.Offset, params.Limit).Result()
+
+	values, ok := result2.([]interface{})
 	if !ok {
 		fmt.Println("Error: invalid result format")
 		return nil
 	}
 
+	/* json struct unmarshal */
 	admins := []schemas.Admin{}
 	for _, val := range values {
 		if val != nil {
@@ -82,4 +129,9 @@ func A() []schemas.Admin {
 	}
 
 	return admins
+}
+
+func B(params Params) {
+	queryConditons := []string{}
+	AgeRangeChecker(&queryConditons, params.Age)
 }
