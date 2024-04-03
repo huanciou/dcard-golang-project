@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "dcard-golang-project/docs"
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/models"
 	"dcard-golang-project/routes"
@@ -9,6 +8,8 @@ import (
 	"dcard-golang-project/workers"
 	"log"
 	"os"
+
+	_ "dcard-golang-project/docs"
 
 	"github.com/gin-contrib/pprof"
 
@@ -37,9 +38,21 @@ import (
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
 func init() {
-	if err := godotenv.Load(); err != nil {
+
+	env := os.Getenv("ENV")
+	var envFile string
+
+	switch env {
+	case "production":
+		envFile = ".env.prod"
+	default:
+		envFile = ".env.dev"
+	}
+
+	if err := godotenv.Load(envFile); err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
 	/* db initiation */
 	models.DBInit()
 	models.RedisInit()
@@ -55,7 +68,7 @@ func main() {
 	r := gin.Default()
 
 	/* statics */
-	r.LoadHTMLGlob("templates/*")
+	// r.LoadHTMLGlob("templates/*")
 
 	/* middlewares */
 	// r.Use(middlewares.LoggerToFile())
