@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export const options = {
-  vus: 3000,
+  vus: 5000,
   duration: '30s',
   thresholds: {
     http_reqs: ['rate>=10000'],

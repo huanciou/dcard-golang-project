@@ -55,13 +55,18 @@ func init() {
 
 	/* db initiation */
 	models.DBInit()
+
+	/* redis initiation */
 	models.RedisInit()
 
 	/* Load Lua Script*/
 	utils.LoadLuaScript()
 
-	// 分配一個 goroutine 進行 cron job
+	/* 分配一個 goroutine 進行 cron job */
 	go workers.CronJob()
+
+	/* 當每次重啟時，更新 redis Bitmap */
+	go utils.SetBitmaps()
 }
 
 func main() {

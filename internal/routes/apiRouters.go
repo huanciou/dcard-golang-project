@@ -13,6 +13,5 @@ func ApiRoutersInit(r *gin.Engine) {
 		apiRouters.POST("/ad", api.Admin)
 		apiRouters.GET("/mock", api.MockData)
 		apiRouters.GET("/test", api.Test)
-		apiRouters.GET("/setBitmap", api.SetBitmap)
 	}
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"dcard-golang-project/middlewares"
 	"dcard-golang-project/models"
 	"dcard-golang-project/schemas"
 	"encoding/json"
@@ -10,8 +11,14 @@ import (
 	"strings"
 )
 
-/* 從 db 拿出 依照 Order by data (ASC) 後的所有廣告，建立 Bitmap */
-func Scheduler(ads []schemas.Admin) {
+/* 從 db 拿出 依照 Order by date (ASC) 後的所有廣告，建立 Bitmap */
+func SetBitmaps() {
+
+	ads, err := models.AdQueryWithDate()
+	if err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+
 	for index, ad := range ads {
 		idStr := strconv.Itoa(index + 1) // int to str
 		adJSON, _ := json.Marshal(ad)
@@ -66,7 +73,7 @@ func Scheduler(ads []schemas.Admin) {
 	}
 }
 
-func A(params Params) []schemas.Admin {
+func FilterResultsByConditions(params Params) []schemas.Admin {
 	ctx := context.Background()
 	queryConditions := []string{}
 	queryAge := []string{}
@@ -129,9 +136,4 @@ func A(params Params) []schemas.Admin {
 	}
 
 	return admins
-}
-
-func B(params Params) {
-	queryConditons := []string{}
-	AgeRangeChecker(&queryConditons, params.Age)
 }

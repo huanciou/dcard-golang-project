@@ -13,18 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// type Ad struct{}
-
 /* manually create Ad */
 
 func Admin(c *gin.Context) { // POST
-	// post := models.Admin{}
+	post := schemas.Admin{}
 
-	// if err := c.ShouldBindJSON(&post); err != nil {
-	// 	panic(&(middlewares.ValidationError{Message: err.Error()}))
-	// } else {
-	// 	c.JSON(200, post)
-	// }
+	if err := c.ShouldBindJSON(&post); err != nil {
+		panic(&(middlewares.ValidationError{Message: err.Error()}))
+	} else {
+		c.JSON(200, post)
+	}
 
 	// data := schemas.Admin{
 	// 	Title:    "廣告2",
@@ -52,10 +50,10 @@ func Broadcast(c *gin.Context) { // GET
 
 	/* receive query params */
 	offsetStr := c.DefaultQuery("offset", "5")
-	ageStr := c.Query("age")
-	gender := c.Query("gender")
-	country := c.Query("country")
-	platform := c.Query("platform")
+	ageStr := c.DefaultQuery("age", "-1")
+	gender := c.DefaultQuery("gender", "all")
+	country := c.DefaultQuery("country", "all")
+	platform := c.DefaultQuery("platform", "all")
 
 	/* convert string to int */
 	offset, _ := strconv.Atoi(offsetStr)
@@ -75,7 +73,7 @@ func Broadcast(c *gin.Context) { // GET
 	}
 
 	/* redis query */
-	result := utils.A(params)
+	result := utils.FilterResultsByConditions(params)
 
 	/* response */
 	c.JSON(200, result)
@@ -166,46 +164,6 @@ func Test(c *gin.Context) {
 		Offset: 1,
 		Limit:  3,
 	}
-	data := utils.A(params)
+	data := utils.FilterResultsByConditions(params)
 	c.JSON(200, data)
-}
-
-func Test2(c *gin.Context) {
-	/* receive query params */
-	offsetStr := c.DefaultQuery("offset", "5")
-	ageStr := c.DefaultQuery("age", "-1")
-	gender := c.DefaultQuery("gender", "nil")
-	country := c.DefaultQuery("country", "nil")
-	platform := c.DefaultQuery("platform", "nil")
-
-	/* convert string to int */
-	offset, _ := strconv.Atoi(offsetStr)
-	age, _ := strconv.Atoi(ageStr)
-
-	/* validation */
-	params := utils.Params{
-		Offset:   offset,
-		Limit:    3,
-		Age:      age,
-		Gender:   gender,
-		Country:  country,
-		Platform: platform,
-	}
-
-	if err := utils.Validate.Struct(params); err != nil {
-		panic(&(middlewares.ValidationError{Message: err.Error()}))
-	}
-	result := utils.A(params)
-
-	c.JSON(200, result)
-}
-
-func SetBitmap(c *gin.Context) {
-
-	result, err := models.FindAdminWithDetails()
-	if err != nil {
-		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
-	}
-	utils.Scheduler(result)
-	c.JSON(200, result)
 }

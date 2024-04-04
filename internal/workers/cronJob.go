@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"dcard-golang-project/utils"
 	"fmt"
 	"time"
 
@@ -9,9 +10,12 @@ import (
 
 func CronJob() {
 	c := cron.New()
+
 	c.AddFunc("@daily", func() {
-		fmt.Println("This is a cron job running every 5 seconds.")
+		utils.SetBitmaps()
+		fmt.Println("Update redis bitmaps successfully")
 	})
+
 	c.Start()
 	time.Sleep(time.Second * 3600)
 }
