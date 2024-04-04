@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  web:
+    build: ./internal
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    restart: always
+      
+  db:
+    build: ./mysql
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_DATABASE=gin
+      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_USER=user
+    volumes:
+      - ./mysql/:/docker-entrypoint-initdb.d/
+    restart: always
+    
+  redis: 
+    build: ./redis
+    ports:
+      - 6380:6379
+    environment:
+      - BIND=redis
+      - PASSWORD= 
+      - DB=0
+    volumes:
+      - ./redis/:/data/
+    restart: always

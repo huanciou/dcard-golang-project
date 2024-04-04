@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -16,10 +18,14 @@ func RedisInit() {
 }
 
 func NewClient(ctx context.Context) *redis.Client {
+	ADDR := os.Getenv("REDIS_ADDR")
+	PASSWORD := os.Getenv("REDIS_PASSWORD")
+	DB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
+		Addr:     ADDR,
+		Password: PASSWORD,
+		DB:       DB,
 	})
 
 	pong, err := client.Ping(ctx).Result()

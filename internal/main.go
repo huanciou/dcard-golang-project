@@ -1,14 +1,15 @@
 package main
 
 import (
-	_ "dcard-golang-project/docs"
 	"dcard-golang-project/middlewares"
 	"dcard-golang-project/models"
 	"dcard-golang-project/routes"
 	"dcard-golang-project/utils"
+	"dcard-golang-project/workers"
 	"log"
 	"os"
-	"runtime"
+
+	_ "dcard-golang-project/docs"
 
 	"github.com/gin-contrib/pprof"
 
@@ -37,23 +38,42 @@ import (
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
 func init() {
-	if err := godotenv.Load(); err != nil {
+
+	env := os.Getenv("ENV")
+	var envFile string
+
+	switch env {
+	case "production":
+		envFile = ".env.prod"
+	default:
+		envFile = ".env.dev"
+	}
+
+	if err := godotenv.Load(envFile); err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
 	/* db initiation */
 	models.DBInit()
+
+	/* redis initiation */
 	models.RedisInit()
+
+	/* Load Lua Script*/
 	utils.LoadLuaScript()
 
-	maxCPUs := runtime.NumCPU()
-	runtime.GOMAXPROCS(maxCPUs)
+	/* 分配一個 goroutine 進行 cron job */
+	go workers.CronJob()
+
+	/* 當每次重啟時，更新 redis Bitmap */
+	go utils.SetBitmaps()
 }
 
 func main() {
 	r := gin.Default()
 
 	/* statics */
-	r.LoadHTMLGlob("templates/*")
+	// r.LoadHTMLGlob("templates/*")
 
 	/* middlewares */
 	// r.Use(middlewares.LoggerToFile())

@@ -13,18 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// type Ad struct{}
-
 /* manually create Ad */
 
 func Admin(c *gin.Context) { // POST
-	// post := models.Admin{}
+	post := schemas.Admin{}
 
-	// if err := c.ShouldBindJSON(&post); err != nil {
-	// 	panic(&(middlewares.ValidationError{Message: err.Error()}))
-	// } else {
-	// 	c.JSON(200, post)
-	// }
+	if err := c.ShouldBindJSON(&post); err != nil {
+		panic(&(middlewares.ValidationError{Message: err.Error()}))
+	} else {
+		c.JSON(200, post)
+	}
 
 	// data := schemas.Admin{
 	// 	Title:    "廣告2",
@@ -50,11 +48,12 @@ func Admin(c *gin.Context) { // POST
 
 func Broadcast(c *gin.Context) { // GET
 
-	var offsetStr string = c.DefaultQuery("offset", "5")
-	var ageStr string = c.DefaultQuery("age", "-1")
-	var gender string = c.DefaultQuery("gender", "-1")
-	var country string = c.DefaultQuery("country", "-1")
-	var platform string = c.DefaultQuery("platform", "-1")
+	/* receive query params */
+	offsetStr := c.DefaultQuery("offset", "5")
+	ageStr := c.DefaultQuery("age", "-1")
+	gender := c.DefaultQuery("gender", "all")
+	country := c.DefaultQuery("country", "all")
+	platform := c.DefaultQuery("platform", "all")
 
 	/* convert string to int */
 	offset, _ := strconv.Atoi(offsetStr)
@@ -69,20 +68,15 @@ func Broadcast(c *gin.Context) { // GET
 		Country:  country,
 		Platform: platform,
 	}
-
 	if err := utils.Validate.Struct(params); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
 	}
 
-	/* db query */
-
-	// result, err := models.FindAdminWithDetails(params.Country, params.Gender, params.Platform)
-	// if err != nil {
-	// 	panic(&(middlewares.ServerInternalError{Message: err.Error()}))
-	// }
-
 	/* redis query */
+	result := utils.FilterResultsByConditions(params)
 
+	/* response */
+	c.JSON(200, result)
 }
 
 /* auto generate mock Ads */
@@ -91,14 +85,14 @@ func MockData(c *gin.Context) {
 	var mockDataSet []schemas.Admin
 
 	var mockCountries = []string{
-		"TW",
-		"JP",
-		"CN",
+		"tw",
+		"jp",
+		"cn",
 	}
 
 	var mockGenders = []string{
-		"M",
-		"F",
+		"m",
+		"f",
 	}
 
 	var mockPlatforms = []string{
@@ -166,11 +160,10 @@ func MockData(c *gin.Context) {
 }
 
 func Test(c *gin.Context) {
-	data := utils.A()
+	params := utils.Params{
+		Offset: 1,
+		Limit:  3,
+	}
+	data := utils.FilterResultsByConditions(params)
 	c.JSON(200, data)
 }
-
-// func Test2(c *gin.Context) {
-// 	data := utils.B()
-// 	c.JSON(200, data)
-// }
