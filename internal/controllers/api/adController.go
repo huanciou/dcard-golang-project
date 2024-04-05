@@ -8,44 +8,59 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-/* manually create Ad */
-
+/* create Ad */
 func Admin(c *gin.Context) { // POST
 	post := schemas.Admin{}
 
+	/* receive JSON post reqest */
 	if err := c.ShouldBindJSON(&post); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
-	} else {
-		c.JSON(200, post)
 	}
 
-	// data := schemas.Admin{
-	// 	Title:    "廣告2",
-	// 	StartAt:  time.Date(2024, time.March, 1, 0, 0, 0, 0, time.UTC),
-	// 	EndAt:    time.Date(2024, time.March, 2, 0, 0, 0, 0, time.UTC),
-	// 	AgeStart: 1,
-	// 	AgeEnd:   100,
-	// 	Country: []schemas.Country{
-	// 		{Country: "TW"},
-	// 		{Country: "JP"},
-	// 	},
-	// 	Gender: []schemas.Gender{
-	// 		{Gender: "F"},
-	// 	},
-	// 	Platform: []schemas.Platform{
-	// 		{Platform: "ios"},
-	// 		{Platform: "android"},
-	// 	},
-	// }
+	/* lowercase */
+	for i := range post.Country {
+		post.Country[i].Country = strings.ToLower(post.Country[i].Country)
+	}
+
+	for i := range post.Gender {
+		post.Gender[i].Gender = strings.ToLower(post.Gender[i].Gender)
+	}
+
+	for i := range post.Platform {
+		post.Platform[i].Platform = strings.ToLower(post.Platform[i].Platform)
+	}
+
+	/* validation */
+	postAd := utils.PostAdValidation{
+		Title:    post.Title,
+		StartAt:  post.StartAt,
+		EndAt:    post.EndAt,
+		AgeStart: post.AgeStart,
+		AgeEnd:   post.AgeEnd,
+		Country:  post.Country,
+		Gender:   post.Gender,
+		Platform: post.Platform,
+	}
+
+	if err := utils.Validate.Struct(postAd); err != nil {
+		panic(&(middlewares.ValidationError{Message: err.Error()}))
+	}
+
+	/* store in queue*/
+	// RPush, LRange
+
+	// models.DB.Create(&post)
+
+	c.JSON(200, post)
 }
 
 /* broadcasting */
-
 func Broadcast(c *gin.Context) { // GET
 
 	/* receive query params */
@@ -60,7 +75,7 @@ func Broadcast(c *gin.Context) { // GET
 	age, _ := strconv.Atoi(ageStr)
 
 	/* validation */
-	params := utils.Params{
+	getAd := utils.GetAdValidation{
 		Offset:   offset,
 		Limit:    3,
 		Age:      age,
@@ -68,12 +83,12 @@ func Broadcast(c *gin.Context) { // GET
 		Country:  country,
 		Platform: platform,
 	}
-	if err := utils.Validate.Struct(params); err != nil {
+	if err := utils.Validate.Struct(getAd); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))
 	}
 
 	/* redis query */
-	result := utils.FilterResultsByConditions(params)
+	result := utils.FilterResultsByConditions(getAd)
 
 	/* response */
 	c.JSON(200, result)
@@ -131,7 +146,6 @@ func MockData(c *gin.Context) {
 		}
 
 		for country := range countrySet {
-			fmt.Println(country)
 			countries = append(countries, schemas.Country{Country: country})
 		}
 		for gender := range genderSet {
@@ -157,13 +171,4 @@ func MockData(c *gin.Context) {
 	models.DB.Create(&mockDataSet)
 
 	c.JSON(200, mockDataSet)
-}
-
-func Test(c *gin.Context) {
-	params := utils.Params{
-		Offset: 1,
-		Limit:  3,
-	}
-	data := utils.FilterResultsByConditions(params)
-	c.JSON(200, data)
 }

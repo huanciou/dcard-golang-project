@@ -21,7 +21,7 @@ func AgeRangeChecker(queryAge *[]string, age int) {
 	}
 }
 
-func OptionsChecker(queryConditions *[]string, params Params) {
+func OptionsChecker(queryConditions *[]string, params GetAdValidation) {
 	if params.Gender != "all" {
 		*queryConditions = append(*queryConditions, params.Gender)
 	}

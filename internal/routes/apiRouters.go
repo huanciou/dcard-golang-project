@@ -12,6 +12,5 @@ func ApiRoutersInit(r *gin.Engine) {
 		apiRouters.GET("/ad", api.Broadcast)
 		apiRouters.POST("/ad", api.Admin)
 		apiRouters.GET("/mock", api.MockData)
-		apiRouters.GET("/test", api.Test)
 	}
 }

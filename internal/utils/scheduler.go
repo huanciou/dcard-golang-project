@@ -73,7 +73,7 @@ func SetBitmaps() {
 	}
 }
 
-func FilterResultsByConditions(params Params) []schemas.Admin {
+func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 	ctx := context.Background()
 	queryConditions := []string{}
 	queryAge := []string{}

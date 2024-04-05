@@ -44,7 +44,7 @@ func Logger() *logrus.Logger {
 	logger := logrus.New()
 	logger.Out = src
 
-	logger.SetLevel(logrus.WarnLevel)
+	logger.SetLevel(logrus.InfoLevel)
 
 	logger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",

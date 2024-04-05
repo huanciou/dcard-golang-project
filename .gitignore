@@ -1,0 +1,14 @@
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+*.jar
+*.war
+*.ear
+
+*.gz
+*.tar
+*.bz2
+
+/tmp
