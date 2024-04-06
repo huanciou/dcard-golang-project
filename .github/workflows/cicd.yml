@@ -37,21 +37,20 @@ jobs:
       - name: Stop Docker Compose
         run: docker-compose down
 
-  cd:
-    name: CD
-    runs-on: ubuntu-latest
+cd:
+  name: CD
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      env:
+        PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to EC2
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ec2-user@ec2-18-166-61-81.ap-east-1.compute.amazonaws.com
-
+    - name: Deploy to EC2
+      run: |
+        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+        ssh -o StrictHostKeyChecking=no -i private_key ec2-user@ec2-18-166-61-81.ap-east-1.compute.amazonaws.com '
           cd ./dcard-golang-project
           docker-compose down
           git pull
@@ -67,4 +66,4 @@ jobs:
               echo "Docker Compose failed to start."
           fi
           exit $DOCKER_COMPOSE_STATUS
-          '
+        '
