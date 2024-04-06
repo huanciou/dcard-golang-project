@@ -55,11 +55,6 @@ func PostAd(c *gin.Context) { // POST
 	/* store in queue*/
 	utils.Enqueue(post)
 
-	/* 當時間到才會交由 scheduler 調度 dequeue */
-
-	// data := utils.Dequeue()
-	// models.DB.Create(&data)
-
 	c.JSON(200, gin.H{
 		"result": "ok",
 	})
