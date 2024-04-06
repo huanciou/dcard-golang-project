@@ -21,7 +21,7 @@ jobs:
         run: |
           docker-compose up -d
         continue-on-error: true
-        timeout-minutes: 1
+        timeout-minutes: 5
 
       - name: Wait for services to become healthy
         run: |
