@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: ci
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' && github.event.action == 'closed'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -37,5 +38,3 @@ jobs:
             fi
             exit $DOCKER_COMPOSE_STATUS
           EOF
-
-        depends_on: ci
