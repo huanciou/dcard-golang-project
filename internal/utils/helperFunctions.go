@@ -1,6 +1,7 @@
 package utils
 
 func AgeRangeChecker(queryAge *[]string, age int) {
+
 	if age >= 1 && age <= 20 {
 		*queryAge = append(*queryAge, "1to20")
 	}
@@ -21,7 +22,7 @@ func AgeRangeChecker(queryAge *[]string, age int) {
 	}
 }
 
-func OptionsChecker(queryConditions *[]string, params Params) {
+func OptionsChecker(queryConditions *[]string, params GetAdValidation) {
 	if params.Gender != "all" {
 		*queryConditions = append(*queryConditions, params.Gender)
 	}

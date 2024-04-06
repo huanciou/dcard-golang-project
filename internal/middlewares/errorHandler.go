@@ -13,6 +13,14 @@ func (e *ValidationError) Error() string {
 	return e.Message
 }
 
+type CustomizedError struct {
+	Message string
+}
+
+func (e *CustomizedError) Error() string {
+	return e.Message
+}
+
 type ServerInternalError struct {
 	Message string
 }
@@ -31,6 +39,12 @@ func ErrorHandler() gin.HandlerFunc {
 						"Message": e.Error(),
 					}).Info("Validation Error")
 					c.JSON(400, gin.H{"error": "Validation Error"})
+					c.Abort()
+				case *CustomizedError:
+					Logger().WithFields(logrus.Fields{
+						"Message": e.Error(),
+					}).Info("Customized Error")
+					c.JSON(400, gin.H{"error": e.Error()})
 					c.Abort()
 				case *ServerInternalError:
 					Logger().WithFields(logrus.Fields{

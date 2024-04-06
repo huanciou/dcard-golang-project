@@ -6,6 +6,7 @@ import (
 	"dcard-golang-project/routes"
 	"dcard-golang-project/utils"
 	"dcard-golang-project/workers"
+	"fmt"
 	"log"
 	"os"
 
@@ -45,8 +46,10 @@ func init() {
 	switch env {
 	case "production":
 		envFile = ".env.prod"
+		fmt.Println("using production mode")
 	default:
 		envFile = ".env.dev"
+		fmt.Println("using dev mode")
 	}
 
 	if err := godotenv.Load(envFile); err != nil {
