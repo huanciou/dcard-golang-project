@@ -24,6 +24,7 @@ func SetBitmaps() {
 		adJSON, _ := json.Marshal(ad)
 
 		models.Client.Set(models.Ctx, idStr, adJSON, 0) // id->ad 儲存廣告
+		models.Client.SetBit(models.Ctx, "default", int64(index+1), 1)
 
 		switch {
 		case ad.AgeStart == 1 && ad.AgeEnd == 20:
@@ -82,6 +83,14 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 	AgeRangeChecker(&queryAge, params.Age)
 	OptionsChecker(&queryConditions, params)
 
+	/* when it fits all conditons */
+	if len(queryConditions) == 0 {
+		queryConditions = append(queryConditions, "default")
+	}
+	if len(queryAge) == 0 {
+		queryAge = append(queryAge, "default")
+	}
+
 	/* setup result bitmap with Lua script*/
 	conditionsStr := strings.Join(queryConditions, ",")
 	ageStr := strings.Join(queryAge, ",")
@@ -101,19 +110,30 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 	indexes := []string{}
 	counter := 1
 	flag := 1 + params.Limit*(params.Offset-1)
+	fmt.Println(len(bitMapData))
 
-	for i := 0; len(indexes) < params.Limit; i++ {
-		for j := 7; j >= 0 && len(indexes) < params.Limit; j-- { // from LSB
+	for i := 0; i < len(bitMapData); i++ {
+		for j := 7; j >= 0; j-- { // from LSB
+			if len(indexes) >= params.Limit {
+				break
+			}
 			if bitMapData[i]&(1<<j) != 0 && counter >= flag {
-				indexes = append(indexes, strconv.Itoa((i*8)+(7-j)+1))
+				indexes = append(indexes, strconv.Itoa((i*8)+(7-j)))
 			} else if bitMapData[i]&(1<<j) != 0 {
 				counter++
 			}
 		}
+		if len(indexes) >= params.Limit {
+			break
+		}
+	}
+
+	if len(indexes) == 0 {
+		panic(&(middlewares.CustomizedError{Message: "Already reached the last page"}))
 	}
 
 	indexesStr := strings.Join(indexes, ",")
-	result2, _ := models.Client.EvalSha(ctx, LuaHash2, nil, indexesStr, params.Offset, params.Limit).Result()
+	result2, _ := models.Client.EvalSha(ctx, LuaHash2, nil, indexesStr, len(indexes)).Result()
 
 	values, ok := result2.([]interface{})
 	if !ok {
@@ -136,4 +156,51 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 	}
 
 	return admins
+}
+
+func Enqueue(post schemas.Admin) {
+
+	jsonPost, err := json.Marshal(post)
+	if err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+
+	ctx := context.Background()
+
+	postLength, err := models.Client.LLen(ctx, "post_queue").Result()
+	if postLength >= 3000 {
+		panic(&(middlewares.ValidationError{Message: "Reached the daily quota for creating advertisements"}))
+	} else if err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+
+	if err := models.Client.RPush(ctx, "post_queue", jsonPost).Err(); err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+}
+
+func Dequeue() ([]schemas.Admin, bool) {
+
+	ctx := context.Background()
+	var result []schemas.Admin
+
+	resultArr, err := models.Client.LRange(ctx, "post_queue", 0, -1).Result()
+	if err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+
+	/* 當 array 為空，不存入 db */
+	if len(resultArr) == 0 {
+		return nil, false
+	}
+
+	for _, jsonStr := range resultArr {
+		var decodedData schemas.Admin
+		if err := json.Unmarshal([]byte(jsonStr), &decodedData); err != nil {
+			panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+		}
+		result = append(result, decodedData)
+	}
+
+	return result, true
 }

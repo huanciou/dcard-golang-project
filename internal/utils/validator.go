@@ -21,7 +21,7 @@ func init() {
 
 // get method struct
 type GetAdValidation struct {
-	Offset   int    `validate:"min=1,max=100" json:"offset"`
+	Offset   int    `validate:"min=1,max=1000" json:"offset"`
 	Limit    int    `validate:"required" json:"limit"`
 	Age      int    `validate:"ageValidator" json:"age"`
 	Country  string `validate:"countryValidator" json:"country"`
@@ -45,6 +45,10 @@ type PostAdValidation struct {
 func countryValidator(fl validator.FieldLevel) bool {
 	query := gountries.New()
 	value := fl.Field().String()
+
+	if value == "all" {
+		return true
+	}
 
 	if _, err := query.FindCountryByAlpha(value); err != nil {
 		return false

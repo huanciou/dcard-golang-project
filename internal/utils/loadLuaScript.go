@@ -10,12 +10,12 @@ var LuaHash1 string
 var LuaHash2 string
 
 func LoadLuaScript() {
-	scriptByte, err := os.ReadFile("bitmap.lua")
+	scriptByte, err := os.ReadFile("setBitmaps.lua")
 	if err != nil {
 		fmt.Println("Error reading Lua script file:", err)
 		return
 	}
-	scriptByte2, err := os.ReadFile("bitmap2.lua")
+	scriptByte2, err := os.ReadFile("mget.lua")
 	if err != nil {
 		fmt.Println("Error reading Lua script file:", err)
 		return

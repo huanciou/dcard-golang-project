@@ -1,6 +1,7 @@
 package utils
 
 func AgeRangeChecker(queryAge *[]string, age int) {
+
 	if age >= 1 && age <= 20 {
 		*queryAge = append(*queryAge, "1to20")
 	}

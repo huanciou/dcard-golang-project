@@ -15,7 +15,7 @@ import (
 )
 
 /* create Ad */
-func Admin(c *gin.Context) { // POST
+func PostAd(c *gin.Context) { // POST
 	post := schemas.Admin{}
 
 	/* receive JSON post reqest */
@@ -53,15 +53,20 @@ func Admin(c *gin.Context) { // POST
 	}
 
 	/* store in queue*/
-	// RPush, LRange
+	utils.Enqueue(post)
 
-	// models.DB.Create(&post)
+	/* 當時間到才會交由 scheduler 調度 dequeue */
 
-	c.JSON(200, post)
+	// data := utils.Dequeue()
+	// models.DB.Create(&data)
+
+	c.JSON(200, gin.H{
+		"result": "ok",
+	})
 }
 
 /* broadcasting */
-func Broadcast(c *gin.Context) { // GET
+func GetAd(c *gin.Context) { // GET
 
 	/* receive query params */
 	offsetStr := c.DefaultQuery("offset", "5")
@@ -79,9 +84,9 @@ func Broadcast(c *gin.Context) { // GET
 		Offset:   offset,
 		Limit:    3,
 		Age:      age,
-		Gender:   gender,
-		Country:  country,
-		Platform: platform,
+		Gender:   strings.ToLower(gender),
+		Country:  strings.ToLower(country),
+		Platform: strings.ToLower(platform),
 	}
 	if err := utils.Validate.Struct(getAd); err != nil {
 		panic(&(middlewares.ValidationError{Message: err.Error()}))

@@ -8,8 +8,10 @@ services:
     environment:
       ENV: production
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy # 完全啟動才執行
+      redis:
+        condition: service_healthy
     restart: always
       
   db:
@@ -22,6 +24,10 @@ services:
       - MYSQL_USER=user
     volumes:
       - ./mysql/:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-uuser"]
+      interval: 5s
+      retries: 5
     restart: always
     
   redis: 
@@ -34,4 +40,8 @@ services:
       - DB=0
     volumes:
       - ./redis/:/data/
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
     restart: always

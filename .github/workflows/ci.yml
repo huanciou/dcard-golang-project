@@ -3,6 +3,7 @@ name: ci
 on:
   pull_request:
     branches: ['main']
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,10 +20,23 @@ jobs:
       - name: Start Docker Compose
         run: |
           docker-compose up -d
-          sleep 10
+        continue-on-error: true
+        timeout-minutes: 1
+
+      - name: Wait for services to become healthy
+        run: |
+          retries=0
+          until docker-compose ps | grep -q "Up.*\(db\|redis\).*healthy"; do
+            retries=$((retries+1))
+            if [ $retries -gt 6 ]; then
+              echo "Services did not become healthy within timeout period."
+              exit 1
+            fi
+            sleep 10
+          done
 
       - name: Run tests
-        run: docker-compose exec web ./run_test.sh
+        run: docker-compose exec -T web ./run_test.sh
 
       - name: Stop Docker Compose
         run: docker-compose down

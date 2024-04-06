@@ -1,6 +1,3 @@
-
--- io redis 多次，運用 bitop 找 1
-
 --[[
     使用 Lua 腳本進行 Redis IO 原因:
     1. 保持原子性. Lua 將整個腳本視為一個整體來操作, 包含使用的 Get, MGet method
