@@ -12,3 +12,6 @@
 *.bz2
 
 /tmp
+
+cd.yml
+ci.yml
