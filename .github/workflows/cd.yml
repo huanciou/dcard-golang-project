@@ -37,3 +37,5 @@ jobs:
             fi
             exit $DOCKER_COMPOSE_STATUS
           EOF
+
+        depends_on: ci
