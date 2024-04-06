@@ -28,7 +28,7 @@ jobs:
           retries=0
           until docker-compose ps | grep -q "Up.*\(db\|redis\).*healthy"; do
             retries=$((retries+1))
-            if [ $retries -gt 6 ]; then
+            if [ $retries -gt 30 ]; then
               echo "Services did not become healthy within timeout period."
               exit 1
             fi
