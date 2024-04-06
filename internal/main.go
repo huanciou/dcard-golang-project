@@ -7,7 +7,6 @@ import (
 	"dcard-golang-project/utils"
 	"dcard-golang-project/workers"
 	"fmt"
-	"log"
 	"os"
 
 	_ "dcard-golang-project/docs"
@@ -53,7 +52,7 @@ func init() {
 	}
 
 	if err := godotenv.Load(envFile); err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println("Error loading .env file")
 	}
 
 	/* db initiation */

@@ -1,7 +1,5 @@
 package schemas
 
-/* enum 會自動篩大小寫 */
-
 type Country struct {
 	Id      int    `gorm:"primaryKey;autoIncrement;column:id"`
 	Country string `json:"country" gorm:"type:enum('tw', 'cn', 'jp');not null;column:country"`

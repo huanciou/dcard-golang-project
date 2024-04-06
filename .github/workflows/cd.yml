@@ -3,7 +3,6 @@ name: cd
 on:
   pull_request:
     branches: ['main']
-
   workflow_dispatch:
 
 jobs:
@@ -21,10 +20,22 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@ec2-13-238-213-46.ap-southeast-2.compute.amazonaws.com 'bash -s' << EOF
-            git clone git@github.com:huanciou/dcard-golang-project.git
+          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@ec2-18-166-61-81.ap-east-1.compute.amazonaws.com 'bash -s' << EOF
             cd ./dcard-golang-project
+            docker-compose down
+            git pull
             docker-compose up -d
+
             sleep 10
-            docker-compose exec web ./run_test.sh
+
+            DOCKER_COMPOSE_STATUS=$?
+
+            if [ $DOCKER_COMPOSE_STATUS -eq 0 ]; then
+                echo "Docker Compose started successfully."
+            else
+                echo "Docker Compose failed to start."
+            fi
+            exit $DOCKER_COMPOSE_STATUS
           EOF
+
+        depends_on: ci

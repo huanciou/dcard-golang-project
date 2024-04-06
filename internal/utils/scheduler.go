@@ -6,7 +6,6 @@ import (
 	"dcard-golang-project/models"
 	"dcard-golang-project/schemas"
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -98,19 +97,17 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 	result, err := models.Client.EvalSha(ctx, LuaHash1, nil, conditionsStr, ageStr, params.Offset, params.Limit).Result()
 
 	if err != nil {
-		fmt.Println("Error:", err)
-		return nil
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
 	}
 
 	bitMapData, ok := result.(string)
 	if !ok {
-		fmt.Println("Error: Result is not a string")
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
 	}
 
 	indexes := []string{}
 	counter := 1
 	flag := 1 + params.Limit*(params.Offset-1)
-	fmt.Println(len(bitMapData))
 
 	for i := 0; i < len(bitMapData); i++ {
 		for j := 7; j >= 0; j-- { // from LSB
@@ -137,8 +134,7 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 
 	values, ok := result2.([]interface{})
 	if !ok {
-		fmt.Println("Error: invalid result format")
-		return nil
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
 	}
 
 	/* json struct unmarshal */
@@ -148,8 +144,7 @@ func FilterResultsByConditions(params GetAdValidation) []schemas.Admin {
 			var admin schemas.Admin
 			err := json.Unmarshal([]byte(val.(string)), &admin)
 			if err != nil {
-				fmt.Println("Error:", err)
-				continue
+				panic(&(middlewares.ServerInternalError{Message: err.Error()}))
 			}
 			admins = append(admins, admin)
 		}
@@ -169,7 +164,7 @@ func Enqueue(post schemas.Admin) {
 
 	postLength, err := models.Client.LLen(ctx, "post_queue").Result()
 	if postLength >= 3000 {
-		panic(&(middlewares.ValidationError{Message: "Reached the daily quota for creating advertisements"}))
+		panic(&(middlewares.CustomizedError{Message: "Reached the daily quota for creating advertisements"}))
 	} else if err != nil {
 		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
 	}
