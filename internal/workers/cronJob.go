@@ -17,6 +17,8 @@ func CronJob() {
 
 		ctx := context.Background()
 
+		// 應該確保三件事情的原子性，需要更新
+
 		/* cron job 1: 將 redis 中的 post_queue 推送至 db 當中 */
 		if data, isNotEmpty := utils.Dequeue(); isNotEmpty {
 			models.DB.Create(&data)

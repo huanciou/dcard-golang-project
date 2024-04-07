@@ -1,5 +1,10 @@
 package utils
 
+import (
+	"math/rand"
+	"time"
+)
+
 func AgeRangeChecker(queryAge *[]string, age int) {
 
 	if age >= 1 && age <= 20 {
@@ -32,4 +37,15 @@ func OptionsChecker(queryConditions *[]string, params GetAdValidation) {
 	if params.Country != "all" {
 		*queryConditions = append(*queryConditions, params.Country)
 	}
+}
+
+func GenerateRandomDate() time.Time {
+
+	min := time.Now()
+	max := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC)
+
+	delta := max.Unix() - min.Unix()
+	sec := rand.Int63n(delta) + min.Unix()
+
+	return time.Unix(sec, 0)
 }

@@ -2,7 +2,7 @@
 
 TEST_DIRS=(
     "./"
-    "./utils"
+    "./test"
 )
 
 # 運行測試
