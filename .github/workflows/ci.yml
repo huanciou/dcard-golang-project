@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches: ['Dev']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Start Docker Compose
+        run: |
+          docker-compose up -d
+        continue-on-error: true
+        timeout-minutes: 5
+
+      - name: Run tests
+        run: docker-compose exec -T web ./run_test.sh
+
+      - name: Stop Docker Compose
+        run: docker-compose down

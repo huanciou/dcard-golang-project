@@ -85,6 +85,7 @@ func main() {
 	routes.ApiRoutersInit(r)
 	routes.SwaggerRoutersInit(r)
 
+	/* performance check*/
 	pprof.Register(r)
 
 	PORT := os.Getenv("SERVER_PORT")

@@ -12,7 +12,6 @@ import (
 
 /* 從 db 拿出 依照 Order by date (ASC) 後的所有廣告，建立 Bitmap */
 func SetBitmaps() {
-
 	ads, err := models.AdQueryWithDate()
 	if err != nil {
 		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
