@@ -1,0 +1,33 @@
+name: cd
+
+on:
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ./dcard-golang-project
+            docker-compose down
+            git pull
+            docker-compose up -d || true
+
+            sleep 10
+
+            DOCKER_COMPOSE_STATUS=$?
+
+            if [ $DOCKER_COMPOSE_STATUS -eq 0 ]; then
+                echo "Docker Compose started successfully."
+            else
+                echo "Docker Compose failed to start."
+            fi
+            exit $DOCKER_COMPOSE_STATUS

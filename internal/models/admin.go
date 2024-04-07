@@ -19,6 +19,7 @@ func AdQueryWithDate() ([]schemas.Admin, error) {
 		Joins("JOIN genders ON genders.admin_id = admin.id").
 		Joins("JOIN platforms ON platforms.admin_id = admin.id").
 		Preload("Country").Preload("Gender").Preload("Platform").
+		Where("admin.deleted_at IS NULL").
 		Order("end_at ASC").
 		Distinct(). // 確保一對多結構在 Prelaod 的時候不會重複返回多個 Admin
 		Find(&admin).Error
