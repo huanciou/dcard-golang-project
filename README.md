@@ -142,11 +142,20 @@ panic 時, 除了回傳給用戶對應的錯誤 status code 以外, 並將`實�
 ### POST ADs
 
 ![docker](./assets/postAd.png)
-用戶新增廣告時，會先經過 Validator 驗證, 若成功將會把貼文送入 Redis 中的 post_queue <br>
+
+用戶新增廣告時，會先經過 Validator 驗證, 若成功將會把貼文送入 Redis 中的 post_queue 中 <br>
+待每日 00:00 時, Scheduler 會執行三項動作：
+
+1. 將 post_queue 當中的當日所有廣告推送至資料庫當中
+2. 清空 Redis 快取
+3. 從資料庫拿出所有符合條件(未標示刪除、已起始、按照結束日期升序)的所有廣告, 建立 [BitMaps](#bitmap) 放入 Redis 當中
 
 ### GET ADs
 
 ![docker](./assets/getAd.png)
+
+用戶查詢符合條件的廣告時，會先經過 Validator 驗證參數正確性, 若成功會直接前往 Redis 中,
+利用 Bitwise 方式找尋對應符合條件的廣告貼文，回傳給用戶
 
 ## MySQL
 
@@ -160,6 +169,8 @@ Where("admin.deleted_at IS NULL").
 Where("admin.start_at < ? AND admin.end_at > ?", now, now).
 Order("end_at ASC")
 ```
+
+若之後有更多查詢語句需要執行，可以建立聯合索引，並用 `Explain` 語句查看索引覆蓋範圍
 
 ## Redis
 
