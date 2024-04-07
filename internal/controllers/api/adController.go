@@ -14,7 +14,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/* create Ad */
+// @Summary post
+// @Description post
+// @Tags ad
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/ad [post]
 func PostAd(c *gin.Context) { // POST
 	post := schemas.Admin{}
 
@@ -60,7 +66,13 @@ func PostAd(c *gin.Context) { // POST
 	})
 }
 
-/* broadcasting */
+// @Summary get
+// @Description get
+// @Tags ad
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /api/v1/ad [get]
 func GetAd(c *gin.Context) { // GET
 
 	/* receive query params */
@@ -98,6 +110,21 @@ func GetAd(c *gin.Context) { // GET
 
 func MockData(c *gin.Context) {
 	var mockDataSet []schemas.Admin
+	var existingDataCount int64
+
+	if err := models.DB.Model(&schemas.Admin{}).Count(&existingDataCount).Error; err != nil {
+		panic(&(middlewares.ServerInternalError{Message: err.Error()}))
+	}
+
+	targetData := 3000
+	numFakeData := targetData - int(existingDataCount)
+
+	if numFakeData <= 0 {
+		c.JSON(200, gin.H{
+			"result": "already 3000+ Ads exist",
+		})
+		return
+	}
 
 	var mockCountries = []string{
 		"tw",
@@ -118,7 +145,7 @@ func MockData(c *gin.Context) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	for i := 0; i < 3000; i++ {
+	for i := 0; i < numFakeData; i++ {
 		var countries []schemas.Country
 		var genders []schemas.Gender
 		var platforms []schemas.Platform
@@ -155,10 +182,16 @@ func MockData(c *gin.Context) {
 			platforms = append(platforms, schemas.Platform{Platform: platform})
 		}
 
+		startAt := time.Now()
+		endAt := utils.GenerateRandomDate()
+		for endAt.Before(startAt) {
+			endAt = utils.GenerateRandomDate()
+		}
+
 		data := schemas.Admin{
 			Title:    fmt.Sprintf("廣告%v", i),
-			StartAt:  time.Date(2024, time.March, 1, 0, 0, 0, 0, time.UTC),
-			EndAt:    time.Date(2024, time.March, 2, 0, 0, 0, 0, time.UTC),
+			StartAt:  startAt,
+			EndAt:    endAt,
 			AgeStart: 1,
 			AgeEnd:   100,
 			Country:  countries,
@@ -170,5 +203,7 @@ func MockData(c *gin.Context) {
 
 	models.DB.Create(&mockDataSet)
 
-	c.JSON(200, mockDataSet)
+	c.JSON(200, gin.H{
+		"result": fmt.Sprintf("Inserted %v advertisements", numFakeData),
+	})
 }

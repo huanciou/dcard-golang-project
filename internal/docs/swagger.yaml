@@ -15,7 +15,32 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Swagger Example API
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/ad:
+    get:
+      consumes:
+      - application/json
+      description: get
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: get
+      tags:
+      - ad
+    post:
+      consumes:
+      - application/json
+      description: post
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: post
+      tags:
+      - ad
 securityDefinitions:
   BasicAuth:
     type: basic

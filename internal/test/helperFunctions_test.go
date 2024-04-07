@@ -2,7 +2,6 @@ package utils_test
 
 import (
 	"dcard-golang-project/utils"
-	"log"
 	"reflect"
 	"testing"
 )
@@ -14,8 +13,6 @@ func TestAgeRangeChecker(t *testing.T) {
 	expectedValues := []string{"1to24", "1to100", "20to24", "20to100", "24to100"}
 	if !reflect.DeepEqual(mockQueryAge, expectedValues) {
 		t.Errorf("TestAgeRangeChecker failed, got: %v, want: %v", mockQueryAge, expectedValues)
-	} else {
-		log.Println("TestAgeRangeChecker succeeded")
 	}
 }
 
