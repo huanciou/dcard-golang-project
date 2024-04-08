@@ -73,14 +73,14 @@ $ curl -X POST -H "Content-Type: application/json" \
 
 - GET
 
-| Parameter | Type      | Required | Description       |
-| --------- | --------- | -------- | ----------------- |
-| offset    | time.Time | No       | min=1, max=100    |
-| limit     | time.Time | No       | const             |
-| age       | int       | No       | min=1, max=100    |
-| gender    | string    | No       | M, F              |
-| country   | string    | No       | TW, JP, CN        |
-| platform  | string    | No       | IOS, Android, Web |
+| Parameter | Type   | Required | Description       |
+| --------- | ------ | -------- | ----------------- |
+| offset    | int    | No       | min=1, max=100    |
+| limit     | int    | No       | const             |
+| age       | int    | No       | min=1, max=100    |
+| gender    | string | No       | M, F              |
+| country   | string | No       | TW, JP, CN        |
+| platform  | string | No       | IOS, Android, Web |
 
 ```shell
 $ curl -X GET -H "Content-Type: application/json" \
@@ -159,6 +159,8 @@ panic 時, 除了回傳給用戶對應的錯誤 status code 以外, 並將`實�
 
 ## MySQL
 
+![schema](./assets/schema.png)
+
 主要使用到的 Query 語句為
 用於 [cron job](#cron-job) 中 <br>
 尋找所有尚未刪除, 並且在效期內的廣告, 按照結束時間升序 <br>
@@ -217,7 +219,7 @@ Order("end_at ASC")
 
 - 當用戶依照條件拿廣告：在建立好今日的 [Bitmap](#bitmap) 後, 每次用戶需要找到符合的廣告條件時, 我不需要對資料庫進行 query, 我只需要在 Redis 中對用戶搜尋廣告的條件做 [Bitwise](#bitmap) 的 AND, OR 操作就可以高效率的找到符合的對應廣告。
 
-因此在整個設計上, 一天我只需要 I/O 兩次, 一次是整筆廣告存入, 一次是符合當日條件的廣告取出。
+因此在整個設計上, 一天只需要 I/O DB 兩次, 一次是整筆廣告存入, 一次是符合當日條件的廣告取出。
 
 ### BitMap
 
@@ -281,13 +283,16 @@ BITOP AND conditions isFemale isTW isIOS // id:2, id:3
 BITOP AND age conditions // id:2, id:3
 ```
 
-我們就可以得到一個含有所有結果的 binary string: 0011
-因此我們再轉換並放入 []string: [2,3]
-再拿 [2,3] 利用 key-value pair 到 Redis 找對應的值, 得到回傳的資訊
-並且因為當初我們在建立 BitMaps 時, 就已經按照時序來排過順序, 因此 id 靠前的廣告
-必定是越快過期的, 我們只要將結果拼起來回傳便可以完成
+我們就可以得到一個含有所有結果的 binary string: 0011 <br>
+因此我們再轉換並放入 []string: [2,3] <br>
+再拿 [2,3] 利用 key-value pair 到 Redis 找對應的值, 得到回傳的資訊 <br>
+並且因為當初我們在建立 BitMaps 時, 就已經按照時序來排過順序, 因此 id 靠前的廣告 <br>
+必定是越快過期的, 我們只要將結果拼起來回傳便可以完成 <br>
 
-再者, 因為是用陣列來儲存的特性, Index 是有序的, 我們可以避免碰如在 RDBMS 中因為利用 B+ Tree 儲存的特性, 使用 Offset&Limit 語法需要獲取指定範圍內的值時, 仍然需要從頭去遍歷符合條件的結果的問題, 而這個問題在遇到儲存龐大廣告時, 可能需要使用 cursor-based pagination 來對分頁做優化
+再者, 因為是用陣列來儲存的特性, Index 是有序的 <br>
+我們可以避免碰如在 RDBMS 中因為利用 B+ Tree 儲存的特性 <br>
+使用 Offset&Limit 語法需要獲取指定範圍內的值時, 仍然需要從頭去遍歷符合條件的結果的問題 <br>
+而這個問題在遇到儲存龐大廣告時, 可能需要使用 cursor-based pagination 來對分頁做優化 <br>
 
 ## Lua
 
