@@ -2,7 +2,7 @@
 
 ## Description
 
-![description](./assets/description.pdf)
+![description](./assets/description.png)
 
 ## Prerequisite
 
