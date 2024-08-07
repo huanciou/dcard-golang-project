@@ -2,7 +2,7 @@
 
 ## Description
 
-https://drive.google.com/file/d/1dnDiBDen7FrzOAJdKZMDJg479IC77_zT/view
+![description](./assets/description.png)
 
 ## Prerequisite
 
